@@ -1,0 +1,35 @@
+# Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary extension folders (like the Pyrefly one you saw)
+__pyrefly_virtual__/
+.inmemory/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Output directories (users will generate these by running main.py)
+models/
+preprocessed_data/
+feature_selection_output/
+evaluation_output/
+analysis_output/
+
+# Note: Raw datasets (*.csv) are kept so users can clone and run python main.py
