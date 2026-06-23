@@ -1,0 +1,102 @@
+================================================================================
+  CROP YIELD PREDICTION — EXPERIMENT COMPARISON REPORT (OLD DATASET)
+================================================================================
+
+Test Set Size: 3,439 samples (2011 - 2013)
+
+────────────────────────────────────────────────────────────────────────────────
+PERFORMANCE SUMMARY TABLE
+────────────────────────────────────────────────────────────────────────────────
+                           Model         RMSE          MSE         MAE          MBE       R²      MAPE  Accuracy %   Acc_10%   Acc_20%
+    Option C: UniLSTM Neural Net 11967.314151 1.432166e+08 5489.406738   248.381004 0.984556 11.198325   88.801675 72.026752 87.903460
+     Option B: BiLSTM Neural Net 12106.153807 1.465590e+08 5585.674805  -401.085459 0.984196 14.427174   85.572826 66.530968 82.000582
+       Option A: Stacking Hybrid 12327.534709 1.519681e+08 5481.358514  -233.506384 0.983613 11.690412   88.309588 71.387031 86.565862
+Option C: UniLSTM-XGBoost Hybrid 13662.196602 1.866556e+08 6489.706543 -1800.054590 0.979872 10.547033   89.452967 70.543763 88.485025
+         Option A: Random Forest 13697.632802 1.876251e+08 5542.895847  -775.016078 0.979768  8.395985   91.604015 79.645246 90.636813
+ Option B: BiLSTM-XGBoost Hybrid 13972.668178 1.952355e+08 6353.805176 -1335.667721 0.978947 10.428311   89.571689 72.840942 88.397790
+               Option A: XGBoost 14409.495758 2.076336e+08 5937.850586 -1436.357511 0.977610  8.839298   91.160702 78.220413 90.665891
+        Option A: MLP Embeddings 14475.009637 2.095259e+08 9438.394531  1157.121087 0.977406 36.978306   63.021694 47.571969 64.786275
+
+BEST PERFORMING MODEL: Option C: UniLSTM Neural Net
+  RMSE: 11967.31 hg/ha
+  R²:   0.9846
+
+────────────────────────────────────────────────────────────────────────────────
+DETAILED MODEL EVALUATION ANALYSIS
+────────────────────────────────────────────────────────────────────────────────
+
+  [Option A: Random Forest]
+    RMSE (Error):       13697.63 hg/ha
+    MAE (Abs Error):    5542.90 hg/ha
+    MBE (Bias):         775.02 hg/ha
+    R² Score:           0.9798
+    Residual Stats:
+      Std Dev:          13675.69
+      Min / Max Error:  -117918.53 / 168390.11
+
+  [Option A: XGBoost]
+    RMSE (Error):       14409.50 hg/ha
+    MAE (Abs Error):    5937.85 hg/ha
+    MBE (Bias):         1436.36 hg/ha
+    R² Score:           0.9776
+    Residual Stats:
+      Std Dev:          14337.73
+      Min / Max Error:  -122060.28 / 174361.50
+
+  [Option A: MLP Embeddings]
+    RMSE (Error):       14475.01 hg/ha
+    MAE (Abs Error):    9438.39 hg/ha
+    MBE (Bias):         -1157.12 hg/ha
+    R² Score:           0.9774
+    Residual Stats:
+      Std Dev:          14428.69
+      Min / Max Error:  -130559.31 / 159979.53
+
+  [Option A: Stacking Hybrid]
+    RMSE (Error):       12327.53 hg/ha
+    MAE (Abs Error):    5481.36 hg/ha
+    MBE (Bias):         233.51 hg/ha
+    R² Score:           0.9836
+    Residual Stats:
+      Std Dev:          12325.32
+      Min / Max Error:  -130540.40 / 157659.59
+
+  [Option B: BiLSTM Neural Net]
+    RMSE (Error):       12106.15 hg/ha
+    MAE (Abs Error):    5585.68 hg/ha
+    MBE (Bias):         401.09 hg/ha
+    R² Score:           0.9842
+    Residual Stats:
+      Std Dev:          12099.51
+      Min / Max Error:  -137395.91 / 149102.34
+
+  [Option B: BiLSTM-XGBoost Hybrid]
+    RMSE (Error):       13972.67 hg/ha
+    MAE (Abs Error):    6353.81 hg/ha
+    MBE (Bias):         1335.67 hg/ha
+    R² Score:           0.9789
+    Residual Stats:
+      Std Dev:          13908.68
+      Min / Max Error:  -131957.03 / 162428.22
+
+  [Option C: UniLSTM Neural Net]
+    RMSE (Error):       11967.31 hg/ha
+    MAE (Abs Error):    5489.41 hg/ha
+    MBE (Bias):         -248.38 hg/ha
+    R² Score:           0.9846
+    Residual Stats:
+      Std Dev:          11964.74
+      Min / Max Error:  -134540.78 / 145160.38
+
+  [Option C: UniLSTM-XGBoost Hybrid]
+    RMSE (Error):       13662.20 hg/ha
+    MAE (Abs Error):    6489.71 hg/ha
+    MBE (Bias):         1800.05 hg/ha
+    R² Score:           0.9799
+    Residual Stats:
+      Std Dev:          13543.09
+      Min / Max Error:  -136088.72 / 170233.59
+
+================================================================================
+  END OF REPORT
+================================================================================
