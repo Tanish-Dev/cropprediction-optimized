@@ -6,3 +6,14 @@ __pycache__/
 .ipynb_checkpoints/
 pipeline_outputs/
 .DS_Store
+
+# Large binary model artifacts (retrain locally to regenerate)
+*.keras
+*.pkl
+*.npz
+
+# Scratch / intermediate merge files
+new_model2/temp.csv
+old_model/temp.csv
+new_model2/yield_df.csv
+old_model/yield_df.csv

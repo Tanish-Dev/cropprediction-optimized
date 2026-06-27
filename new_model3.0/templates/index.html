@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BiLSTM Crop-Yield Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- soft light backdrop (reduced blobs) -->
+  <div class="bg-orbs">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+  </div>
+
+  <main class="container">
+
+    <!-- ============================ HEADER ============================ -->
+    <header class="glass header">
+      <div class="brand">
+        <div class="brand-icon"><i data-lucide="sprout"></i></div>
+        <div>
+          <h1>BiLSTM Crop-Yield Intelligence</h1>
+          <p class="subtitle">Bidirectional-LSTM forecasting &middot; FAO panel 1990&ndash;2013</p>
+        </div>
+      </div>
+      <div class="header-tags">
+        <span class="tag"><i data-lucide="git-branch"></i> new_model3.0</span>
+        <span class="tag tag-live"><i data-lucide="circle-dot"></i> model loaded</span>
+      </div>
+    </header>
+
+    <!-- ============================ KPIs ============================ -->
+    <section class="kpi-grid" id="kpiGrid">
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="target"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiR2">&mdash;</span><span class="kpi-label">Test R&sup2; (variance explained)</span></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="gauge"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiAcc">&mdash;</span><span class="kpi-label">Accuracy (within &plusmn;20%)</span></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="ruler"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiRmse">&mdash;</span><span class="kpi-label">Test RMSE (hg/ha)</span></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="layers"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiSeq">&mdash;</span><span class="kpi-label">Scored sequences</span></div>
+      </div>
+    </section>
+
+    <!-- ============================ FINDINGS ============================ -->
+    <section class="section-head">
+      <i data-lucide="bar-chart-3"></i><h2>Findings &amp; Visualisations</h2>
+    </section>
+
+    <div class="viz-grid">
+      <div class="glass card span-2">
+        <div class="card-head"><i data-lucide="scatter-chart"></i><h3>Predicted vs Actual &mdash; Test set</h3>
+          <span class="hint">points hug the dashed line = accurate</span></div>
+        <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+      </div>
+
+      <div class="glass card">
+        <div class="card-head"><i data-lucide="trending-up"></i><h3>Yearly mean yield</h3></div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+
+      <div class="glass card">
+        <div class="card-head"><i data-lucide="wheat"></i><h3>Accuracy by crop (R&sup2;)</h3></div>
+        <div class="chart-wrap"><canvas id="cropChart"></canvas></div>
+      </div>
+
+      <div class="glass card">
+        <div class="card-head"><i data-lucide="activity"></i><h3>Residual distribution</h3></div>
+        <div class="chart-wrap"><canvas id="resChart"></canvas></div>
+      </div>
+
+      <!-- NEW visualisation: prediction accuracy gauge -->
+      <div class="glass card acc-card">
+        <div class="card-head"><i data-lucide="gauge"></i><h3>Prediction accuracy</h3>
+          <span class="hint">test set</span></div>
+        <div class="gauge-wrap">
+          <canvas id="accGauge"></canvas>
+          <div class="gauge-center">
+            <span class="g-val" id="gaugeVal">&mdash;</span>
+            <span class="g-cap">within &plusmn;20%</span>
+          </div>
+        </div>
+        <div class="acc-bars" id="accBars"></div>
+      </div>
+
+      <div class="glass card span-3">
+        <div class="card-head"><i data-lucide="globe-2"></i><h3>Top countries &mdash; average yield &amp; fit</h3></div>
+        <div class="table-wrap"><table id="countryTable">
+          <thead><tr><th>Country</th><th>Avg yield (hg/ha)</th><th>Test R&sup2;</th><th>Sequences</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ============================ HOW IT WORKS ============================ -->
+    <section class="section-head">
+      <i data-lucide="book-open"></i><h2>How This Model Works</h2>
+    </section>
+
+    <div class="hiw-grid">
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="help-circle"></i></span><h3>The problem, in plain words</h3></div>
+        <p>Given how a crop has behaved in a place over the <strong>past four years</strong> &mdash; its
+          yield, rainfall, pesticide use and temperature &mdash; we predict <strong>next year's yield</strong>
+          (in hectograms per hectare). It is a genuine <strong>forecast</strong>: the model never sees the
+          future year it is asked to predict.</p>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="database"></i></span><h3>The data</h3></div>
+        <p>The FAO district panel: <strong>101 countries &times; 10 crops</strong>, yearly from
+          <strong>1990&ndash;2013</strong>. Each row carries the year's yield, annual rainfall,
+          pesticide tonnage and average temperature. Every country&ndash;crop pair is treated as its own
+          time series.</p>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="scan-line"></i></span><h3>Turning history into windows</h3></div>
+        <p>A <strong>4-year sliding window</strong> moves along each series. Four consecutive years go
+          <em>in</em>; the fifth year's yield is the <em>target</em>. Only strictly contiguous runs are kept,
+          so the network always sees real, gap-free seasons.</p>
+        <div class="flow">
+          <span class="node">Yr&nbsp;1</span><span class="node">Yr&nbsp;2</span>
+          <span class="node">Yr&nbsp;3</span><span class="node">Yr&nbsp;4</span>
+          <span class="arr"><i data-lucide="arrow-right"></i></span>
+          <span class="node">predict&nbsp;Yr&nbsp;5</span>
+        </div>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="brain-circuit"></i></span><h3>The network architecture</h3></div>
+        <p>A <strong>hybrid</strong> design fuses two signals:</p>
+        <ul>
+          <li><b>Temporal branch</b> &mdash; two stacked <b>Bidirectional LSTMs</b> (96&rarr;48 units) read the
+            window <em>forwards and backwards</em>, capturing how early-window conditions set up later ones.</li>
+          <li><b>Identity branch</b> &mdash; learned <b>embeddings</b> for country and crop encode each one's
+            baseline yield level (a tonne of maize differs wildly by place).</li>
+          <li>The two are concatenated &rarr; <b>Dense 128 &rarr; 64 &rarr; 1</b> with dropout &amp; batch-norm.</li>
+        </ul>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="settings-2"></i></span><h3>How it was trained</h3></div>
+        <ul>
+          <li><b>Leakage-safe split:</b> train &le;2007, validate 2008&ndash;2010, test 2011+. Scalers are fit
+            on the training period <em>only</em>.</li>
+          <li><b>Huber loss</b> (robust to outlier yields) + <b>Adam</b> optimiser.</li>
+          <li><b>EarlyStopping</b> restores the best validation weights; <b>ReduceLROnPlateau</b> anneals the
+            learning rate. Seeds fixed for reproducibility.</li>
+        </ul>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="list-checks"></i></span><h3>Technical specs at a glance</h3></div>
+        <div class="table-wrap"><table class="spec-table">
+          <tbody>
+            <tr><td>Framework</td><td class="mono">TensorFlow / Keras 3</td></tr>
+            <tr><td>Input window</td><td class="mono">4 years &times; 4 features</td></tr>
+            <tr><td>Recurrent core</td><td class="mono">2 &times; BiLSTM (96, 48)</td></tr>
+            <tr><td>Embeddings</td><td class="mono">country&rarr;32, crop&rarr;5</td></tr>
+            <tr><td>Loss / Optimiser</td><td class="mono">Huber / Adam (1e-3)</td></tr>
+            <tr><td>Regularisation</td><td class="mono">Dropout 0.2&ndash;0.3 + BatchNorm</td></tr>
+            <tr><td>Sequences</td><td class="mono" id="specSeq">&mdash;</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="glass hiw" style="margin-bottom:40px">
+      <div class="h"><span class="ic"><i data-lucide="git-compare"></i></span><h3>How does it compare to new_model2?</h3></div>
+      <p>The honest answer: on raw test scores, <strong>new_model2's best model is higher</strong> &mdash;
+        but the two solve <strong>different tasks</strong>, so the headline numbers are not directly comparable.</p>
+      <div class="table-wrap" style="margin-top:14px"><table class="spec-table">
+        <thead><tr><th>Model</th><th>Task</th><th>Test R&sup2;</th><th>Within &plusmn;20%</th></tr></thead>
+        <tbody>
+          <tr><td>new_model2 &mdash; best (UniLSTM)</td><td>now-cast</td><td class="mono">0.985</td><td class="mono">87.9%</td></tr>
+          <tr><td>new_model2 &mdash; BiLSTM</td><td>now-cast</td><td class="mono">0.984</td><td class="mono">82.0%</td></tr>
+          <tr><td><b>new_model3.0 &mdash; BiLSTM (this)</b></td><td><b>1-yr forecast</b></td><td class="mono" id="cmpR2">&mdash;</td><td class="mono" id="cmpAcc">&mdash;</td></tr>
+        </tbody>
+      </table></div>
+      <div class="compare-note">
+        <i data-lucide="info"></i>
+        <p>new_model2 feeds the model the <strong>target year's own</strong> rainfall, pesticide and temperature
+          values &mdash; it explains the current year given current weather (<em>now-casting</em>). This model is
+          only given the <strong>past</strong> and must predict a year it has never seen (<em>true forecasting</em>),
+          a strictly harder problem &mdash; which is why its R&sup2; is lower yet arguably more useful for planning ahead.</p>
+      </div>
+    </div>
+
+    <!-- ============================ MODEL TESTER ============================ -->
+    <section class="section-head">
+      <i data-lucide="flask-conical"></i><h2>Test the Model</h2>
+    </section>
+
+    <div class="glass card tester">
+      <div class="step-row"><span class="step-num">1</span><span>Pick a country and crop</span></div>
+      <div class="tester-controls">
+        <div class="field">
+          <label><i data-lucide="globe"></i> Country</label>
+          <select id="selCountry"></select>
+        </div>
+        <div class="field">
+          <label><i data-lucide="wheat"></i> Crop</label>
+          <select id="selCrop"></select>
+        </div>
+      </div>
+
+      <div class="step-row"><span class="step-num">2</span><span>Forecast next year's yield</span></div>
+      <p class="tester-help" id="testerHelp">
+        One click loads this pair's real last four years of history and forecasts the following year &mdash;
+        then shows the actual figure so you can see how close the model gets.
+      </p>
+      <div class="tester-actions">
+        <button class="btn btn-primary" id="btnPredict"><i data-lucide="zap"></i> Forecast yield</button>
+        <button class="btn btn-link" id="btnToggleAdv"><i data-lucide="sliders-horizontal"></i> Adjust the inputs manually</button>
+      </div>
+
+      <div class="result-row" id="resultRow" hidden>
+        <div class="glass result-card">
+          <span class="result-label"><i data-lucide="sparkles"></i> Forecast yield <span id="resYear"></span></span>
+          <span class="result-val" id="predVal">&mdash;</span>
+          <span class="result-unit">hg/ha</span>
+        </div>
+        <div class="glass result-card result-actual" id="actualCard" hidden>
+          <span class="result-label"><i data-lucide="check-check"></i> Actual (held-out)</span>
+          <span class="result-val" id="actualVal">&mdash;</span>
+          <span class="result-unit" id="errVal"></span>
+        </div>
+      </div>
+
+      <!-- advanced manual editing (hidden by default) -->
+      <div class="advanced" id="advancedPanel" hidden>
+        <p class="adv-note">Edit any of the four input years below, then forecast. Values are pre-filled from
+          the selected pair's real history.</p>
+        <div class="table-wrap">
+          <table class="input-table" id="inputTable">
+            <thead><tr>
+              <th>Year</th><th>Yield (hg/ha)</th><th>Rainfall (mm/yr)</th>
+              <th>Pesticides (t)</th><th>Avg temp (&deg;C)</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="tester-actions" style="margin-top:14px">
+          <button class="btn btn-ghost" id="btnPredictManual"><i data-lucide="zap"></i> Forecast from these values</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <span>BiLSTM &middot; learned country/crop embeddings &middot; Huber loss &middot; leakage-safe temporal split</span>
+    </footer>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

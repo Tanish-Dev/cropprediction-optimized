@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>new_model2 · Crop-Yield Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <main class="container">
+
+    <!-- ============================ HEADER ============================ -->
+    <header class="glass header">
+      <div class="brand">
+        <div>
+          <h1>Crop-Yield Intelligence &mdash; new_model2</h1>
+          <p class="subtitle">8-model now-casting suite &middot; LSTM &amp; XGBoost hybrids &middot; FAO panel</p>
+        </div>
+      </div>
+      <div class="header-tags">
+        <span class="tag"><i data-lucide="git-branch"></i> new_model2</span>
+        <span class="tag tag-live"><i data-lucide="circle-dot"></i> 8 models loaded</span>
+      </div>
+    </header>
+
+    <!-- ============================ KPIs ============================ -->
+    <section class="kpi-grid">
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="target"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiR2">&mdash;</span><span class="kpi-label">Selected model Test R&sup2;</span></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="gauge"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiAcc">&mdash;</span><span class="kpi-label">Accuracy (within &plusmn;20%)</span></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="ruler"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiRmse">&mdash;</span><span class="kpi-label">Selected model RMSE (hg/ha)</span></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-icon"><i data-lucide="boxes"></i></div>
+        <div class="kpi-body"><span class="kpi-val" id="kpiModels">&mdash;</span><span class="kpi-label">Models compared</span></div>
+      </div>
+    </section>
+
+    <!-- ============================ FINDINGS ============================ -->
+    <section class="section-head">
+      <i data-lucide="bar-chart-3"></i><h2>Findings &amp; Visualisations</h2>
+    </section>
+
+    <!-- model picker: the selected model drives every chart, metric & prediction -->
+    <div class="glass model-bar">
+      <div class="mb-left">
+        <span class="mb-icon"><i data-lucide="cpu"></i></span>
+        <div class="mb-meta">
+          <span class="mb-label">Active model</span>
+          <span class="mb-name" id="mbName">&mdash;</span>
+        </div>
+      </div>
+      <div class="mb-right">
+        <div class="mb-stat"><b id="mbR2">&mdash;</b><span>Test R&sup2;</span></div>
+        <div class="mb-stat"><b id="mbAcc">&mdash;</b><span>within &plusmn;20%</span></div>
+        <div class="mb-pick">
+          <label for="selModel">Choose a model</label>
+          <select id="selModel"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-grid">
+      <div class="glass card span-3">
+        <div class="card-head"><i data-lucide="trophy"></i><h3>Model leaderboard &mdash; Test R&sup2; across all 8 models</h3>
+          <span class="hint">selected model highlighted</span></div>
+        <div class="chart-wrap" style="height:300px"><canvas id="leaderboardChart"></canvas></div>
+      </div>
+
+      <div class="glass card span-2">
+        <div class="card-head"><i data-lucide="scatter-chart"></i><h3>Predicted vs Actual &mdash; Test set</h3>
+          <span class="hint" id="bestNameHint">&mdash;</span></div>
+        <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+      </div>
+
+      <div class="glass card acc-card">
+        <div class="card-head"><i data-lucide="gauge"></i><h3>Prediction accuracy</h3>
+          <span class="hint">test set</span></div>
+        <div class="gauge-wrap">
+          <canvas id="accGauge"></canvas>
+          <div class="gauge-center">
+            <span class="g-val" id="gaugeVal">&mdash;</span>
+            <span class="g-cap">within &plusmn;20%</span>
+          </div>
+        </div>
+        <div class="acc-bars" id="accBars"></div>
+      </div>
+
+      <div class="glass card">
+        <div class="card-head"><i data-lucide="wheat"></i><h3>Accuracy by crop (R&sup2;)</h3></div>
+        <div class="chart-wrap"><canvas id="cropChart"></canvas></div>
+      </div>
+
+      <div class="glass card">
+        <div class="card-head"><i data-lucide="activity"></i><h3>Residual distribution</h3></div>
+        <div class="chart-wrap"><canvas id="resChart"></canvas></div>
+      </div>
+
+      <div class="glass card">
+        <div class="card-head"><i data-lucide="trending-up"></i><h3>Yearly mean yield</h3></div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+
+      <div class="glass card span-3">
+        <div class="card-head"><i data-lucide="globe-2"></i><h3>Top countries &mdash; average yield &amp; fit</h3></div>
+        <div class="table-wrap"><table id="countryTable">
+          <thead><tr><th>Country</th><th>Avg yield (hg/ha)</th><th>Test R&sup2;</th><th>Samples</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ============================ HOW IT WORKS ============================ -->
+    <section class="section-head">
+      <i data-lucide="book-open"></i><h2>How This Model Works</h2>
+    </section>
+
+    <div class="hiw-grid">
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="help-circle"></i></span><h3>The problem, in plain words</h3></div>
+        <p>For a given country and crop in a given year, estimate that year's yield
+          (hg/ha) from the <strong>current year's</strong> rainfall, pesticide use and
+          temperature, plus the <strong>previous five years</strong> of history. Because it
+          uses the current year's own conditions, this is <strong>now-casting</strong>.</p>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="database"></i></span><h3>The data &amp; features</h3></div>
+        <p>The FAO panel: <strong>101 countries &times; 10 crops</strong>, 1990&ndash;2013.
+          Each record is enriched with <strong>5-year lag features</strong> for yield, rainfall,
+          pesticides and temperature &mdash; so every prediction sees a short window of recent
+          history alongside the current year.</p>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="layers"></i></span><h3>Eight models, three strategies</h3></div>
+        <ul>
+          <li><b>Option A</b> &mdash; classic tabular models on flattened features:
+            <b>Random Forest</b>, <b>XGBoost</b>, <b>MLP embeddings</b>, and a <b>stacking</b> ensemble.</li>
+          <li><b>Option B / C</b> &mdash; neural nets with an <b>LSTM</b> branch over the 5-year
+            sequence + learned country/crop <b>embeddings</b> (B = bidirectional, C = unidirectional).</li>
+          <li><b>Hybrids</b> &mdash; deep LSTM features fed into <b>XGBoost</b> regressors.</li>
+        </ul>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="brain-circuit"></i></span><h3>The neural architecture (B &amp; C)</h3></div>
+        <p>The LSTM nets pair a sequence branch with embeddings:</p>
+        <ul>
+          <li><b>Sequence branch</b> &mdash; LSTM (32&rarr;16) reads the 5&times;4 lag window
+            (bi-directional in Option B, uni-directional in Option C).</li>
+          <li><b>Embeddings</b> &mdash; country&rarr;16, crop&rarr;8 dimensions.</li>
+          <li><b>Current-year inputs</b> (year, rain, pesticides, temp) concatenated, then
+            <b>Dense 128 &rarr; 64 &rarr; 1</b> with dropout, batch-norm &amp; L2.</li>
+        </ul>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="settings-2"></i></span><h3>How it was trained &amp; judged</h3></div>
+        <ul>
+          <li><b>Leakage-safe temporal split:</b> train 1990&ndash;2007, val 2008&ndash;2010,
+            test 2011&ndash;2013. Scalers fit on train only.</li>
+          <li><b>Safe label encoding</b> handles unseen countries/crops via an &lt;UNKNOWN&gt; token.</li>
+          <li>All 8 models scored on the same held-out test set with RMSE, R², MAPE &amp;
+            tolerance accuracy.</li>
+        </ul>
+      </div>
+
+      <div class="glass hiw">
+        <div class="h"><span class="ic"><i data-lucide="list-checks"></i></span><h3>Technical specs at a glance</h3></div>
+        <div class="table-wrap"><table class="spec-table">
+          <tbody>
+            <tr><td>Framework</td><td class="mono">TensorFlow / Keras 3 + XGBoost</td></tr>
+            <tr><td>Models</td><td class="mono">8 (Options A / B / C)</td></tr>
+            <tr><td>Sequence input</td><td class="mono">5 years &times; 4 features</td></tr>
+            <tr><td>Recurrent core</td><td class="mono">LSTM (32, 16)</td></tr>
+            <tr><td>Embeddings</td><td class="mono">country&rarr;16, crop&rarr;8</td></tr>
+            <tr><td>Test samples</td><td class="mono" id="specTest">&mdash;</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ============================ MODEL TESTER ============================ -->
+    <section class="section-head">
+      <i data-lucide="flask-conical"></i><h2>Test the Model</h2>
+    </section>
+
+    <div class="glass card tester">
+      <div class="step-row"><span class="step-num">1</span><span>Pick a country and crop</span></div>
+      <div class="tester-controls">
+        <div class="field">
+          <label><i data-lucide="globe"></i> Country</label>
+          <select id="selCountry"></select>
+        </div>
+        <div class="field">
+          <label><i data-lucide="wheat"></i> Crop</label>
+          <select id="selCrop"></select>
+        </div>
+      </div>
+
+      <div class="step-row"><span class="step-num">2</span><span>Estimate the yield</span></div>
+      <p class="tester-help" id="testerHelp">
+        One click loads this pair's latest real record and runs the
+        <strong id="testerModelName">selected model</strong> &mdash; then shows the actual yield
+        so you can see how close it gets. Change the active model above to compare.
+      </p>
+      <div class="tester-actions">
+        <button class="btn btn-primary" id="btnPredict"><i data-lucide="zap"></i> Estimate yield</button>
+        <button class="btn btn-link" id="btnToggleAdv"><i data-lucide="sliders-horizontal"></i> Adjust the inputs manually</button>
+      </div>
+
+      <div class="result-row" id="resultRow" hidden>
+        <div class="glass result-card">
+          <span class="result-label"><i data-lucide="sparkles"></i> Estimated yield <span id="resYear"></span></span>
+          <span class="result-val" id="predVal">&mdash;</span>
+          <span class="result-unit">hg/ha</span>
+        </div>
+        <div class="glass result-card result-actual" id="actualCard" hidden>
+          <span class="result-label"><i data-lucide="check-check"></i> Actual (held-out)</span>
+          <span class="result-val" id="actualVal">&mdash;</span>
+          <span class="result-unit" id="errVal"></span>
+        </div>
+      </div>
+
+      <div class="advanced" id="advancedPanel" hidden>
+        <p class="adv-note">Adjust the current year's conditions and the recent yield history below,
+          then re-estimate. Values are pre-filled from this pair's latest real record.</p>
+        <div class="adv-fields" id="advFields"></div>
+        <div class="tester-actions" style="margin-top:14px">
+          <button class="btn btn-ghost" id="btnPredictManual"><i data-lucide="zap"></i> Estimate from these values</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <span>8-model now-casting suite &middot; LSTM + country/crop embeddings &middot; 5-year lags &middot; leakage-safe split</span>
+    </footer>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
